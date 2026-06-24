@@ -4,408 +4,412 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1565d8">
 <title>Call List</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   :root {
-    --blue:      #2563eb;
-    --blue-dark: #1d4ed8;
-    --blue-light:#eff6ff;
-    --green:     #22c55e;
-    --green-dark:#16a34a;
-    --bg:        #f0f4ff;
-    --card:      #ffffff;
-    --text:      #1e293b;
-    --muted:     #64748b;
-    --border:    #e2e8f0;
+    --blue:       #1565d8;
+    --blue-dark:  #0d4cad;
+    --blue-deep:  #0a3c8a;
+    --blue-soft:  #e9f1fd;
+    --blue-soft2: #d7e6fb;
+    --green:      #34c759;   /* apple green */
+    --green-dark: #28a745;
+    --bg:         #f4f7fc;
+    --card:       #ffffff;
+    --text:       #16243b;
+    --muted:      #6b7a90;
+    --faint:      #9aa7ba;
+    --border:     #e6ecf5;
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg);
     min-height: 100vh;
     color: var(--text);
+    -webkit-font-smoothing: antialiased;
   }
+
+  /* phone icon helper */
+  .ph { display:inline-block; width:1em; height:1em; vertical-align:-0.125em; fill:currentColor; }
 
   /* ─── SETUP SCREEN ─────────────────────────────────────── */
   #setup-screen {
     display: none;
     flex-direction: column;
     align-items: center;
-    min-height: 100vh;
-    padding: 0;
-  }
-
-  .setup-hero {
-    width: 100%;
-    background: linear-gradient(135deg, var(--blue) 0%, #1e40af 100%);
-    padding: 48px 24px 36px;
-    text-align: center;
-    color: #fff;
-  }
-
-  .setup-hero h1 {
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    margin-bottom: 8px;
-  }
-
-  .setup-hero p {
-    font-size: 15px;
-    opacity: 0.85;
-    line-height: 1.5;
-  }
-
-  .setup-body {
-    width: 100%;
-    max-width: 520px;
-    padding: 28px 20px 40px;
-  }
-
-  .setup-card {
-    background: var(--card);
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 2px 16px rgba(37,99,235,0.10);
-    margin-bottom: 16px;
-  }
-
-  .setup-card label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 10px;
-  }
-
-  #contacts-input {
-    width: 100%;
-    height: 240px;
-    padding: 14px;
-    font-size: 15px;
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    resize: vertical;
-    font-family: inherit;
-    line-height: 1.7;
-    background: var(--bg);
-    color: var(--text);
-    transition: border-color 0.15s;
-  }
-  #contacts-input:focus { outline: none; border-color: var(--blue); }
-
-  .format-hint {
-    margin-top: 10px;
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-  .format-hint code {
-    background: var(--blue-light);
-    color: var(--blue);
-    padding: 1px 5px;
-    border-radius: 4px;
-    font-size: 12px;
-  }
-
-  #setup-error {
-    color: #dc2626;
-    font-size: 13px;
-    margin-top: 8px;
-    min-height: 18px;
-  }
-
-  #load-btn {
-    width: 100%;
-    padding: 17px;
-    background: var(--blue);
-    color: #fff;
-    font-size: 17px;
-    font-weight: 700;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-    box-shadow: 0 4px 14px rgba(37,99,235,0.35);
-    letter-spacing: 0.3px;
-  }
-  #load-btn:active { background: var(--blue-dark); transform: scale(0.98); }
-
-  /* ─── MAIN SCREEN ───────────────────────────────────────── */
-  #main-screen { display: none; padding: 14px 14px 48px; max-width: 600px; margin: 0 auto; }
-
-  /* Toolbar */
-  #toolbar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  .tool-btn {
-    padding: 7px 13px;
-    border-radius: 8px;
-    border: 1.5px solid var(--border);
-    font-size: 13px;
-    cursor: pointer;
-    background: var(--card);
-    color: var(--text);
-    transition: background 0.15s;
-  }
-  .tool-btn:active { background: #f1f5f9; }
-  #reset-btn { margin-left: auto; color: #dc2626; border-color: #fca5a5; }
-  #stats-btn { color: var(--blue); border-color: #bfdbfe; }
-
-  #share-tip {
-    font-size: 12px;
-    color: var(--muted);
-    text-align: center;
-    margin-bottom: 10px;
-    display: none;
-    background: var(--card);
-    padding: 8px 12px;
-    border-radius: 8px;
-    word-break: break-all;
-  }
-
-  /* Currently calling */
-  #current-card {
-    display: none;
-    background: var(--blue-light);
-    border: 1.5px solid #bfdbfe;
-    border-radius: 14px;
-    padding: 12px 16px;
-    margin-bottom: 10px;
-    text-align: center;
-  }
-  #current-card .cc-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--blue);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 3px;
-  }
-  #current-card .cc-name { font-size: 17px; font-weight: 700; color: var(--blue-dark); }
-  #current-card .cc-num  { font-size: 14px; color: var(--blue); }
-
-  /* Call Next */
-  #call-next-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    padding: 26px 20px 20px;
-    background: linear-gradient(135deg, var(--green) 0%, #16a34a 100%);
-    color: #fff;
-    border: none;
-    border-radius: 18px;
-    cursor: pointer;
-    text-align: center;
-    text-decoration: none;
-    transition: opacity 0.15s, transform 0.1s;
-    margin-bottom: 10px;
-    box-shadow: 0 4px 18px rgba(34,197,94,0.38);
-  }
-  #call-next-btn:active { opacity: 0.9; transform: scale(0.98); }
-  #call-next-btn .btn-label { font-size: 26px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 5px; }
-  #call-next-btn .btn-name  { font-size: 20px; font-weight: 600; margin-bottom: 2px; }
-  #call-next-btn .btn-num   { font-size: 16px; font-weight: 400; opacity: 0.9; }
-
-  #done-banner {
-    display: none;
-    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
-    color: #fff;
-    text-align: center;
-    padding: 28px 20px;
-    border-radius: 18px;
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    box-shadow: 0 4px 16px rgba(37,99,235,0.3);
-  }
-
-  /* Progress */
-  #progress-bar-wrap {
-    background: var(--border);
-    border-radius: 99px;
-    height: 5px;
-    margin-bottom: 4px;
-    overflow: hidden;
-  }
-  #progress-bar { height: 100%; background: var(--green); border-radius: 99px; transition: width 0.3s; }
-  #progress-label { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 18px; }
-
-  /* Queue */
-  #queue-section h2, #called-section h2 {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 8px;
-  }
-
-  .contact-row {
-    display: flex;
-    align-items: center;
-    background: var(--card);
-    padding: 12px 14px;
-    border-radius: 10px;
-    margin-bottom: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
-  .contact-info { flex: 1; }
-  .contact-name { font-weight: 700; font-size: 15px; }
-  .contact-num  { font-size: 13px; color: var(--muted); margin-top: 1px; }
-
-  .call-back-btn {
-    background: var(--blue-light);
-    border: 1.5px solid #bfdbfe;
-    color: var(--blue);
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 18px;
-    cursor: pointer;
-    text-decoration: none;
-    line-height: 1;
-    transition: background 0.15s;
-    flex-shrink: 0;
-    margin-left: 10px;
-  }
-  .call-back-btn:active { background: #dbeafe; }
-
-  /* Called toggle */
-  #called-toggle {
-    margin-top: 24px;
-    background: none;
-    border: none;
-    color: #cbd5e1;
-    font-size: 13px;
-    cursor: pointer;
-    display: block;
-    text-align: center;
-    width: 100%;
-    padding: 8px 0;
-  }
-  #called-toggle:hover { color: var(--muted); }
-  #called-section { display: none; margin-top: 8px; }
-  #called-section .contact-row { opacity: 0.6; }
-
-  /* ─── STATS MODAL ───────────────────────────────────────── */
-  #stats-modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(15,23,42,0.55);
-    z-index: 100;
-    align-items: flex-end;
     justify-content: center;
+    min-height: 100vh;
+    padding: 28px 22px;
   }
-  #stats-modal.open { display: flex; }
+  .setup-inner { width: 100%; max-width: 460px; }
 
-  .stats-sheet {
-    background: var(--card);
-    border-radius: 20px 20px 0 0;
-    width: 100%;
-    max-width: 540px;
-    padding: 24px 20px 36px;
-    max-height: 85vh;
-    overflow-y: auto;
+  .setup-logo {
+    width: 76px; height: 76px;
+    margin: 0 auto 18px;
+    background: linear-gradient(150deg, var(--blue) 0%, var(--blue-deep) 100%);
+    border-radius: 22px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 28px rgba(21,101,216,0.35);
+    color: #fff;
+    font-size: 38px;
   }
-  .stats-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  .stats-header h2 { font-size: 18px; font-weight: 700; }
-  #close-stats {
-    background: var(--bg);
-    border: none;
-    border-radius: 50%;
-    width: 30px; height: 30px;
-    font-size: 16px;
-    cursor: pointer;
-    color: var(--muted);
-  }
-
-  .stats-total {
+  .setup-inner h1 {
     text-align: center;
-    margin-bottom: 22px;
-    padding: 16px;
-    background: var(--blue-light);
-    border-radius: 12px;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.6px;
+    margin-bottom: 6px;
   }
-  .stats-total .big-num { font-size: 48px; font-weight: 800; color: var(--blue); line-height: 1; }
-  .stats-total .big-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .setup-inner .sub {
+    text-align: center;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 26px;
+  }
 
-  .chart-label {
+  .field-label {
     font-size: 12px;
     font-weight: 700;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.7px;
-    margin-bottom: 12px;
+    margin-bottom: 9px;
   }
+  #contacts-input {
+    width: 100%;
+    height: 250px;
+    padding: 16px;
+    font-size: 15px;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.7;
+    background: var(--card);
+    color: var(--text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  #contacts-input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px var(--blue-soft);
+  }
+  .format-hint { margin-top: 10px; font-size: 13px; color: var(--faint); line-height: 1.5; }
+  .format-hint code {
+    background: var(--blue-soft); color: var(--blue-dark);
+    padding: 2px 6px; border-radius: 5px; font-size: 12px; font-weight: 600;
+  }
+  #setup-error { color: #dc2626; font-size: 13px; margin-top: 8px; min-height: 18px; }
 
-  .chart-wrap { display: flex; flex-direction: column; gap: 7px; }
+  #load-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 17px;
+    background: linear-gradient(150deg, var(--blue) 0%, var(--blue-dark) 100%);
+    color: #fff;
+    font-size: 17px; font-weight: 700;
+    border: none; border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 8px 22px rgba(21,101,216,0.35);
+    letter-spacing: 0.2px;
+  }
+  #load-btn:active { transform: scale(0.98); box-shadow: 0 4px 14px rgba(21,101,216,0.3); }
 
-  .chart-row {
-    display: flex;
+  /* ─── MAIN SCREEN ───────────────────────────────────────── */
+  #main-screen { display: none; max-width: 600px; margin: 0 auto; padding: 14px 14px 48px; }
+
+  /* Header */
+  .app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .app-title { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 800; letter-spacing: -0.3px; }
+  .app-title .logo-dot {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: linear-gradient(150deg, var(--blue), var(--blue-deep));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 15px;
+  }
+  .header-actions { display: flex; gap: 8px; }
+  .icon-btn {
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 8px 13px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .icon-btn:active { background: #eef3fa; }
+  .icon-btn.danger { color: #dc2626; border-color: #f3c9c9; }
+  .icon-btn.brand  { color: var(--blue-dark); border-color: var(--blue-soft2); }
+
+  /* Recent strip (top, collapsible) */
+  .recent-strip {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .recent-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .recent-head .rh-left { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  .recent-head .rh-count {
+    background: var(--blue-soft); color: var(--blue-dark);
+    border-radius: 99px; padding: 1px 8px; font-size: 11px; font-weight: 700;
+  }
+  .recent-head .chev { color: var(--faint); font-size: 12px; transition: transform 0.2s; }
+  .recent-strip.open .chev { transform: rotate(180deg); }
+  .recent-body { display: none; padding: 0 10px 10px; max-height: 240px; overflow-y: auto; }
+  .recent-strip.open .recent-body { display: block; }
+  .recent-preview {
+    padding: 0 14px 11px;
+    font-size: 13px; color: var(--muted);
+    margin-top: -3px;
+  }
+  .recent-preview b { color: var(--text); font-weight: 700; }
+
+  /* Currently calling */
+  #current-card {
+    display: none;
+    background: linear-gradient(150deg, var(--blue-soft) 0%, #f0f6ff 100%);
+    border: 1.5px solid var(--blue-soft2);
+    border-radius: 16px;
+    padding: 13px 18px;
+    margin-bottom: 11px;
+    display: none;
     align-items: center;
-    gap: 10px;
+    gap: 13px;
   }
-  .chart-date { font-size: 12px; color: var(--muted); width: 70px; flex-shrink: 0; text-align: right; }
-  .chart-bar-bg { flex: 1; background: var(--bg); border-radius: 99px; height: 22px; overflow: hidden; }
-  .chart-bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue) 0%, #60a5fa 100%); border-radius: 99px; min-width: 4px; transition: width 0.4s; }
-  .chart-val { font-size: 13px; font-weight: 700; color: var(--blue); width: 28px; flex-shrink: 0; }
+  #current-card .cc-pulse {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--blue); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+    box-shadow: 0 0 0 0 rgba(21,101,216,0.5);
+    animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(21,101,216,0.45); }
+    70%  { box-shadow: 0 0 0 12px rgba(21,101,216,0); }
+    100% { box-shadow: 0 0 0 0 rgba(21,101,216,0); }
+  }
+  #current-card .cc-text { flex: 1; min-width: 0; }
+  #current-card .cc-label { font-size: 11px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.7px; }
+  #current-card .cc-name { font-size: 18px; font-weight: 700; color: var(--blue-deep); }
+  #current-card .cc-num { font-size: 14px; color: var(--blue-dark); }
+  #current-card .cc-redial {
+    flex-shrink: 0;
+    background: var(--blue); color: #fff;
+    border: none; border-radius: 11px;
+    width: 44px; height: 44px;
+    font-size: 19px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+  }
+  #current-card .cc-redial:active { background: var(--blue-dark); }
 
-  .no-stats { text-align: center; color: var(--muted); font-size: 14px; padding: 20px 0; }
+  /* Call Next */
+  #call-next-btn {
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%;
+    padding: 26px 20px 22px;
+    background: linear-gradient(150deg, var(--green) 0%, var(--green-dark) 100%);
+    color: #fff;
+    border: none; border-radius: 22px;
+    cursor: pointer; text-decoration: none;
+    transition: transform 0.1s, box-shadow 0.15s;
+    margin-bottom: 12px;
+    box-shadow: 0 10px 26px rgba(52,199,89,0.4);
+  }
+  #call-next-btn:active { transform: scale(0.98); box-shadow: 0 5px 16px rgba(52,199,89,0.35); }
+  #call-next-btn .btn-label { display:flex; align-items:center; gap:10px; font-size: 25px; font-weight: 800; letter-spacing: 0.4px; margin-bottom: 7px; }
+  #call-next-btn .btn-label .ph { font-size: 26px; }
+  #call-next-btn .btn-name { font-size: 21px; font-weight: 600; margin-bottom: 2px; }
+  #call-next-btn .btn-num { font-size: 16px; font-weight: 400; opacity: 0.92; }
+
+  #done-banner {
+    display: none;
+    background: linear-gradient(150deg, var(--blue) 0%, var(--blue-deep) 100%);
+    color: #fff; text-align: center;
+    padding: 30px 20px; border-radius: 22px;
+    font-size: 22px; font-weight: 700; margin-bottom: 12px;
+    box-shadow: 0 10px 24px rgba(21,101,216,0.32);
+  }
+
+  /* Progress */
+  #progress-bar-wrap { background: var(--border); border-radius: 99px; height: 6px; margin-bottom: 5px; overflow: hidden; }
+  #progress-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--green-dark)); border-radius: 99px; transition: width 0.3s; }
+  #progress-label { text-align: center; font-size: 12px; color: var(--faint); margin-bottom: 20px; font-weight: 500; }
+
+  /* Queue */
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 9px;
+  }
+  .section-head h2 { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .section-head .hint { font-size: 11px; color: var(--faint); }
+
+  .contact-row {
+    display: flex; align-items: center;
+    background: var(--card);
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 7px;
+    box-shadow: 0 1px 4px rgba(22,36,59,0.05);
+    border: 1px solid transparent;
+  }
+  .contact-info { flex: 1; min-width: 0; }
+  .contact-name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .contact-num { font-size: 13px; color: var(--muted); margin-top: 1px; }
+
+  .jump-btn {
+    flex-shrink: 0; margin-left: 10px;
+    background: var(--card);
+    border: 1.5px solid var(--blue-soft2);
+    color: var(--blue-dark);
+    border-radius: 9px;
+    padding: 7px 11px;
+    font-size: 12px; font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .jump-btn:active { background: var(--blue-soft); }
+
+  .redial-btn {
+    flex-shrink: 0; margin-left: 10px;
+    background: var(--blue-soft); border: 1.5px solid var(--blue-soft2);
+    color: var(--blue); border-radius: 10px;
+    width: 40px; height: 40px;
+    font-size: 17px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+  }
+  .redial-btn:active { background: var(--blue-soft2); }
+
+  .called-row { opacity: 0.62; }
+  .empty-note { color: var(--faint); font-size: 13px; padding: 6px 2px; }
+
+  /* ─── STATS MODAL ───────────────────────────────────────── */
+  #stats-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,24,48,0.5); z-index: 100;
+    align-items: flex-end; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  #stats-modal.open { display: flex; }
+  .stats-sheet {
+    background: var(--card);
+    border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 540px;
+    padding: 10px 22px 36px;
+    max-height: 86vh; overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .sheet-grabber { width: 38px; height: 4px; background: var(--border); border-radius: 99px; margin: 4px auto 18px; }
+  .stats-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .stats-header h2 { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; }
+  #close-stats { background: var(--bg); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 15px; cursor: pointer; color: var(--muted); }
+
+  .stat-cards { display: flex; gap: 11px; margin-bottom: 24px; }
+  .stat-card { flex: 1; background: var(--blue-soft); border-radius: 16px; padding: 16px; text-align: center; }
+  .stat-card .num { font-size: 34px; font-weight: 800; color: var(--blue-dark); line-height: 1; }
+  .stat-card .lbl { font-size: 12px; color: var(--muted); margin-top: 5px; font-weight: 500; }
+
+  .chart-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 14px; }
+  .chart-wrap { display: flex; flex-direction: column; gap: 11px; }
+  .chart-row { display: flex; align-items: center; gap: 12px; }
+  .chart-date { font-size: 13px; color: var(--text); font-weight: 600; width: 58px; flex-shrink: 0; }
+  .chart-track { flex: 1; height: 26px; display: flex; align-items: center; }
+  .chart-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue) 0%, #4b8ee8 100%);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: flex-end;
+    min-width: 26px;
+    color: #fff; font-size: 13px; font-weight: 700;
+    padding-right: 9px;
+    transition: width 0.5s cubic-bezier(.2,.8,.2,1);
+  }
+  .no-stats { text-align: center; color: var(--faint); font-size: 14px; padding: 30px 0; }
 </style>
 </head>
 <body>
 
+<!-- shared phone-icon SVG symbol -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="phone-icon" viewBox="0 0 24 24">
+    <path d="M19.95 16.06c-1.3 0-2.55-.21-3.72-.59a1.05 1.05 0 0 0-1.07.25l-1.79 1.79a15.8 15.8 0 0 1-6.94-6.94l1.79-1.8c.28-.27.37-.67.25-1.06A11.7 11.7 0 0 1 7.88 4c0-.58-.47-1.05-1.05-1.05H3.87C3.29 2.95 2.6 3.21 2.6 4 2.6 12.6 9.4 19.4 18 19.4c.75 0 1.05-.67 1.05-1.26v-3.03c0-.58-.47-1.05-1.1-1.05z"/>
+  </symbol>
+</svg>
+
 <!-- SETUP -->
 <div id="setup-screen">
-  <div class="setup-hero">
-    <h1>📞 Call List</h1>
-    <p>Paste your contacts and start calling.<br>Contacts are never permanently saved.</p>
-  </div>
-  <div class="setup-body">
-    <div class="setup-card">
-      <label>Paste Contacts</label>
-      <textarea id="contacts-input" placeholder="Name, Phone Number&#10;One contact per line"></textarea>
-      <div class="format-hint">One per line &nbsp;·&nbsp; Format: <code>Name, Number</code></div>
-      <div id="setup-error"></div>
-    </div>
-    <button id="load-btn" onclick="loadContacts()">Start Calling →</button>
+  <div class="setup-inner">
+    <div class="setup-logo"><svg class="ph" style="width:38px;height:38px"><use href="#phone-icon"/></svg></div>
+    <h1>Call List</h1>
+    <p class="sub">Paste your contacts and start calling.<br>Your list stays on this device only.</p>
+    <div class="field-label">Contacts</div>
+    <textarea id="contacts-input" placeholder="Name, Phone Number&#10;One contact per line"></textarea>
+    <div class="format-hint">One per line &nbsp;·&nbsp; Format: <code>Name, Number</code></div>
+    <div id="setup-error"></div>
+    <button id="load-btn" onclick="loadContacts()">Start Calling</button>
   </div>
 </div>
 
 <!-- MAIN -->
 <div id="main-screen">
-  <div id="toolbar">
-    <button class="tool-btn" id="share-btn" onclick="shareList()">📋 Share</button>
-    <button class="tool-btn" id="stats-btn" onclick="openStats()">📊 Stats</button>
-    <button class="tool-btn" id="reset-btn" onclick="resetAll()">✕ Reset</button>
+  <div class="app-header">
+    <div class="app-title">
+      <span class="logo-dot"><svg class="ph"><use href="#phone-icon"/></svg></span>
+      Call List
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn brand" onclick="openStats()">Stats</button>
+      <button class="icon-btn danger" onclick="resetAll()">Reset</button>
+    </div>
   </div>
-  <div id="share-tip"></div>
+
+  <!-- Recent calls (top, collapsible) -->
+  <div class="recent-strip" id="recent-strip">
+    <div class="recent-head" onclick="toggleRecent()">
+      <div class="rh-left">Recent calls <span class="rh-count" id="recent-count">0</span></div>
+      <span class="chev">▾</span>
+    </div>
+    <div class="recent-preview" id="recent-preview"></div>
+    <div class="recent-body" id="recent-body"></div>
+  </div>
 
   <!-- Currently calling -->
   <div id="current-card">
-    <div class="cc-label">📞 Currently Calling</div>
-    <div class="cc-name" id="cc-name"></div>
-    <div class="cc-num"  id="cc-num"></div>
+    <div class="cc-pulse"><svg class="ph"><use href="#phone-icon"/></svg></div>
+    <div class="cc-text">
+      <div class="cc-label">Currently calling</div>
+      <div class="cc-name" id="cc-name"></div>
+      <div class="cc-num" id="cc-num"></div>
+    </div>
+    <a class="cc-redial" id="cc-redial" href="#"><svg class="ph"><use href="#phone-icon"/></svg></a>
   </div>
 
   <!-- Call Next -->
   <a id="call-next-btn" href="#" onclick="callNext(event)">
-    <span class="btn-label">📞 CALL NEXT</span>
+    <span class="btn-label"><svg class="ph"><use href="#phone-icon"/></svg> CALL NEXT</span>
     <span class="btn-name" id="next-name">—</span>
-    <span class="btn-num"  id="next-num">—</span>
+    <span class="btn-num" id="next-num">—</span>
   </a>
 
   <div id="done-banner">🎉 All calls complete!</div>
@@ -414,29 +418,27 @@
   <div id="progress-label"></div>
 
   <div id="queue-section">
-    <h2>Up Next</h2>
+    <div class="section-head">
+      <h2>Up Next</h2>
+      <span class="hint">Tap “Start here” to skip ahead</span>
+    </div>
     <div id="queue-list"></div>
-  </div>
-
-  <button id="called-toggle" onclick="toggleCalled()">▾ Show called (<span id="called-count">0</span>)</button>
-  <div id="called-section">
-    <h2>Called</h2>
-    <div id="called-list"></div>
   </div>
 </div>
 
 <!-- STATS MODAL -->
 <div id="stats-modal" onclick="closeStatsOutside(event)">
   <div class="stats-sheet">
+    <div class="sheet-grabber"></div>
     <div class="stats-header">
       <h2>Call Stats</h2>
       <button id="close-stats" onclick="closeStats()">✕</button>
     </div>
-    <div class="stats-total">
-      <div class="big-num" id="stats-total-num">0</div>
-      <div class="big-label">Total calls made</div>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="num" id="stat-total">0</div><div class="lbl">Total calls</div></div>
+      <div class="stat-card"><div class="num" id="stat-today">0</div><div class="lbl">Today</div></div>
     </div>
-    <div class="chart-label">Last 14 days</div>
+    <div class="chart-title">Calls by day</div>
     <div class="chart-wrap" id="chart-wrap"></div>
     <div class="no-stats" id="no-stats" style="display:none">No calls recorded yet.</div>
   </div>
@@ -445,261 +447,220 @@
 <script>
   let contacts   = [];
   let currentIdx = 0;
-  let currentCalling = null; // {name, num} of person being called right now
+  let currentCalling = null;
 
-  // ── STORAGE ──────────────────────────────────────────────
-  // Contacts: sessionStorage only (gone on tab close)
-  // Call log:  localStorage (persisted, date→count only)
+  /* ── STORAGE ──────────────────────────────────────────────
+     Active list -> localStorage (survives the browser killing a
+     backgrounded tab; this is what caused the earlier reset bug).
+     Daily call log -> localStorage (date -> count only, no names). */
 
-  function saveSession() {
-    sessionStorage.setItem('cl_contacts', JSON.stringify(contacts));
-    sessionStorage.setItem('cl_idx', currentIdx);
-    if (currentCalling) sessionStorage.setItem('cl_current', JSON.stringify(currentCalling));
-    else sessionStorage.removeItem('cl_current');
+  function saveState() {
+    localStorage.setItem('cl_contacts', JSON.stringify(contacts));
+    localStorage.setItem('cl_idx', currentIdx);
+    if (currentCalling) localStorage.setItem('cl_current', JSON.stringify(currentCalling));
+    else localStorage.removeItem('cl_current');
   }
-
-  function loadSession() {
-    const c = sessionStorage.getItem('cl_contacts');
+  function loadState() {
+    const c = localStorage.getItem('cl_contacts');
     if (!c) return false;
     contacts   = JSON.parse(c);
-    currentIdx = parseInt(sessionStorage.getItem('cl_idx')) || 0;
-    const cur  = sessionStorage.getItem('cl_current');
+    currentIdx = parseInt(localStorage.getItem('cl_idx')) || 0;
+    const cur  = localStorage.getItem('cl_current');
     currentCalling = cur ? JSON.parse(cur) : null;
     return true;
   }
-
-  // Daily call log: { "2026-06-24": 5, ... }
   function getLog() {
     try { return JSON.parse(localStorage.getItem('cl_log') || '{}'); } catch(e) { return {}; }
   }
   function recordCall() {
-    const log  = getLog();
-    const today = todayKey();
-    log[today] = (log[today] || 0) + 1;
+    const log = getLog(), k = todayKey();
+    log[k] = (log[k] || 0) + 1;
     localStorage.setItem('cl_log', JSON.stringify(log));
   }
-  function todayKey() {
-    return new Date().toISOString().slice(0,10);
-  }
+  function todayKey() { return new Date().toISOString().slice(0,10); }
 
-  // ── SETUP ────────────────────────────────────────────────
+  /* ── SETUP ─────────────────────────────────────────────── */
   function loadContacts() {
     const raw = document.getElementById('contacts-input').value.trim();
     if (!raw) { showError('Please paste at least one contact.'); return; }
-
-    const lines  = raw.split('\n').map(l => l.trim()).filter(Boolean);
-    const parsed = [];
-    const bad    = [];
-
+    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+    const parsed = [], bad = [];
     lines.forEach((line, i) => {
-      const commaIdx = line.lastIndexOf(',');
+      const ci = line.lastIndexOf(',');
       let name, num;
-      if (commaIdx !== -1) {
-        name = line.slice(0, commaIdx).trim();
-        num  = line.slice(commaIdx + 1).trim();
-      } else {
+      if (ci !== -1) { name = line.slice(0,ci).trim(); num = line.slice(ci+1).trim(); }
+      else {
         const m = line.match(/^(.+?)\s+([\d\s\(\)\-\+\.]{7,})$/);
-        if (m) { name = m[1].trim(); num = m[2].trim(); }
-        else   { bad.push(i + 1); return; }
+        if (m) { name = m[1].trim(); num = m[2].trim(); } else { bad.push(i+1); return; }
       }
-      if (!name || !num) { bad.push(i + 1); return; }
+      if (!name || !num) { bad.push(i+1); return; }
       parsed.push({ name, num });
     });
-
-    if (!parsed.length) { showError('No valid contacts found. Use "Name, Number" format.'); return; }
+    if (!parsed.length) { showError('No valid contacts found. Use "Name, Number".'); return; }
     if (bad.length) showError(`Skipped line(s) ${bad.join(', ')} — check format.`);
-
-    contacts       = parsed;
-    currentIdx     = 0;
-    currentCalling = null;
-    saveSession();
-    showMain();
+    contacts = parsed; currentIdx = 0; currentCalling = null;
+    saveState(); showMain();
   }
+  function showError(m) { document.getElementById('setup-error').textContent = m; }
 
-  function showError(msg) { document.getElementById('setup-error').textContent = msg; }
-
-  // ── MAIN ─────────────────────────────────────────────────
+  /* ── MAIN ──────────────────────────────────────────────── */
   function showMain() {
     document.getElementById('setup-screen').style.display = 'none';
-    document.getElementById('main-screen').style.display  = 'block';
+    document.getElementById('main-screen').style.display = 'block';
     render();
   }
 
   function render() {
-    const total   = contacts.length;
-    const called  = currentIdx;
+    const total = contacts.length, called = currentIdx;
 
-    // Progress
-    const pct = total ? (called / total * 100) : 0;
-    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('progress-bar').style.width = (total ? called/total*100 : 0) + '%';
     document.getElementById('progress-label').textContent = `${called} of ${total} called`;
 
-    // Currently calling card
-    const curCard = document.getElementById('current-card');
+    // Currently calling
+    const cc = document.getElementById('current-card');
     if (currentCalling) {
-      curCard.style.display = 'block';
+      cc.style.display = 'flex';
       document.getElementById('cc-name').textContent = currentCalling.name;
-      document.getElementById('cc-num').textContent  = currentCalling.num;
-    } else {
-      curCard.style.display = 'none';
-    }
+      document.getElementById('cc-num').textContent = currentCalling.num;
+      document.getElementById('cc-redial').href = 'tel:' + currentCalling.num.replace(/\D/g,'');
+    } else cc.style.display = 'none';
 
-    // Call Next vs Done
-    const btn    = document.getElementById('call-next-btn');
-    const banner = document.getElementById('done-banner');
+    // Call Next / Done
+    const btn = document.getElementById('call-next-btn');
+    const done = document.getElementById('done-banner');
     if (currentIdx < total) {
-      btn.style.display    = 'flex';
-      banner.style.display = 'none';
+      btn.style.display = 'flex'; done.style.display = 'none';
       document.getElementById('next-name').textContent = contacts[currentIdx].name;
-      document.getElementById('next-num').textContent  = contacts[currentIdx].num;
-      btn.href = 'tel:' + contacts[currentIdx].num.replace(/\D/g, '');
-    } else {
-      btn.style.display    = 'none';
-      banner.style.display = 'block';
-    }
+      document.getElementById('next-num').textContent = contacts[currentIdx].num;
+      btn.href = 'tel:' + contacts[currentIdx].num.replace(/\D/g,'');
+    } else { btn.style.display = 'none'; done.style.display = 'block'; }
 
     // Queue
-    const qList = document.getElementById('queue-list');
-    qList.innerHTML = '';
-    contacts.slice(currentIdx + 1).forEach(c => qList.appendChild(makeRow(c, false)));
-    if (contacts.slice(currentIdx + 1).length === 0 && currentIdx < total) {
-      qList.innerHTML = '<div style="color:#94a3b8;font-size:13px;padding:6px 0;">Last one!</div>';
-    }
+    const q = document.getElementById('queue-list');
+    q.innerHTML = '';
+    const upcoming = contacts.slice(currentIdx + 1);
+    upcoming.forEach((c, i) => q.appendChild(makeQueueRow(c, currentIdx + 1 + i)));
+    if (upcoming.length === 0 && currentIdx < total)
+      q.innerHTML = '<div class="empty-note">Last one — no more after this.</div>';
     document.getElementById('queue-section').style.display = currentIdx < total ? 'block' : 'none';
 
-    // Called
-    const cList = document.getElementById('called-list');
-    cList.innerHTML = '';
-    contacts.slice(0, currentIdx).reverse().forEach(c => cList.appendChild(makeRow(c, true)));
-    document.getElementById('called-count').textContent = called;
+    // Recent
+    renderRecent();
   }
 
-  function makeRow(c, showBtn) {
-    const row  = document.createElement('div');
+  function renderRecent() {
+    const called = contacts.slice(0, currentIdx).reverse();
+    document.getElementById('recent-count').textContent = currentIdx;
+    const prev = document.getElementById('recent-preview');
+    if (called.length) {
+      prev.innerHTML = `Last: <b>${esc(called[0].name)}</b> · ${esc(called[0].num)}`;
+      prev.style.display = 'block';
+    } else { prev.innerHTML = '<span style="color:var(--faint)">No calls yet</span>'; prev.style.display = 'block'; }
+    const body = document.getElementById('recent-body');
+    body.innerHTML = '';
+    called.forEach(c => body.appendChild(makeRecentRow(c)));
+  }
+
+  function makeQueueRow(c, idx) {
+    const row = document.createElement('div');
     row.className = 'contact-row';
-    const info = document.createElement('div');
-    info.className = 'contact-info';
-    info.innerHTML = `<div class="contact-name">${esc(c.name)}</div><div class="contact-num">${esc(c.num)}</div>`;
-    row.appendChild(info);
-    if (showBtn) {
-      const a = document.createElement('a');
-      a.className  = 'call-back-btn';
-      a.href       = 'tel:' + c.num.replace(/\D/g, '');
-      a.textContent = '📞';
-      row.appendChild(a);
-    }
+    row.innerHTML = `<div class="contact-info"><div class="contact-name">${esc(c.name)}</div><div class="contact-num">${esc(c.num)}</div></div>`;
+    const jump = document.createElement('button');
+    jump.className = 'jump-btn';
+    jump.textContent = 'Start here';
+    jump.onclick = () => jumpTo(idx);
+    row.appendChild(jump);
     return row;
   }
 
-  function esc(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  function makeRecentRow(c) {
+    const row = document.createElement('div');
+    row.className = 'contact-row called-row';
+    row.innerHTML = `<div class="contact-info"><div class="contact-name">${esc(c.name)}</div><div class="contact-num">${esc(c.num)}</div></div>`;
+    const a = document.createElement('a');
+    a.className = 'redial-btn';
+    a.href = 'tel:' + c.num.replace(/\D/g,'');
+    a.innerHTML = '<svg class="ph"><use href="#phone-icon"/></svg>';
+    row.appendChild(a);
+    return row;
   }
 
-  // ── CALL NEXT ────────────────────────────────────────────
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  /* ── CALL NEXT ─────────────────────────────────────────── */
   function callNext(e) {
     if (currentIdx >= contacts.length) { e.preventDefault(); return; }
     currentCalling = contacts[currentIdx];
     currentIdx++;
     recordCall();
-    saveSession();
+    saveState();
     setTimeout(render, 80);
   }
 
-  // ── CALLED TOGGLE ────────────────────────────────────────
-  function toggleCalled() {
-    const sec = document.getElementById('called-section');
-    const open = sec.style.display === 'block';
-    sec.style.display = open ? 'none' : 'block';
-    document.getElementById('called-toggle').innerHTML =
-      `${open ? '▾' : '▴'} ${open ? 'Show' : 'Hide'} called (<span id="called-count">${currentIdx}</span>)`;
+  /* ── SKIP AHEAD ────────────────────────────────────────── */
+  function jumpTo(idx) {
+    const c = contacts[idx];
+    if (!confirm(`Skip ahead to ${c.name}?\n\nEveryone above will be marked done (not counted as calls).`)) return;
+    currentIdx = idx;
+    currentCalling = null;
+    saveState();
+    render();
   }
 
-  // ── SHARE ────────────────────────────────────────────────
-  function shareList() {
-    const payload = btoa(unescape(encodeURIComponent(JSON.stringify({ contacts, currentIdx, currentCalling }))));
-    const url = location.href.split('#')[0] + '#' + payload;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(() => showTip('Link copied! Open on your phone to sync.'));
-    } else { showTip(url); }
-  }
-  function showTip(msg) {
-    const tip = document.getElementById('share-tip');
-    tip.textContent = msg;
-    tip.style.display = 'block';
-    setTimeout(() => tip.style.display = 'none', 6000);
-  }
+  /* ── RECENT TOGGLE ─────────────────────────────────────── */
+  function toggleRecent() { document.getElementById('recent-strip').classList.toggle('open'); }
 
-  // ── RESET ────────────────────────────────────────────────
+  /* ── RESET ─────────────────────────────────────────────── */
   function resetAll() {
-    if (!confirm('Clear this call list and start over? (Stats are kept.)')) return;
-    sessionStorage.clear();
-    location.hash = '';
+    if (!confirm('Clear this call list and start over? (Your stats are kept.)')) return;
+    localStorage.removeItem('cl_contacts');
+    localStorage.removeItem('cl_idx');
+    localStorage.removeItem('cl_current');
     location.reload();
   }
 
-  // ── STATS ────────────────────────────────────────────────
+  /* ── STATS ─────────────────────────────────────────────── */
   function openStats() {
-    const log   = getLog();
-    const dates = Object.keys(log).sort();
-    const total = Object.values(log).reduce((a,b) => a+b, 0);
+    const log = getLog();
+    const total = Object.values(log).reduce((a,b)=>a+b,0);
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-today').textContent = log[todayKey()] || 0;
 
-    document.getElementById('stats-total-num').textContent = total;
-
-    // Last 14 days
-    const last14 = [];
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const k = d.toISOString().slice(0,10);
-      last14.push({ key: k, label: fmtDate(d), val: log[k] || 0 });
-    }
-
-    const max = Math.max(...last14.map(r => r.val), 1);
+    // Only days that actually have calls, newest first
+    const rows = Object.keys(log).filter(k => log[k] > 0).sort().reverse();
+    const max = Math.max(...rows.map(k => log[k]), 1);
     const wrap = document.getElementById('chart-wrap');
     wrap.innerHTML = '';
+    document.getElementById('no-stats').style.display = rows.length ? 'none' : 'block';
 
-    const hasAny = last14.some(r => r.val > 0);
-    document.getElementById('no-stats').style.display = hasAny ? 'none' : 'block';
-
-    last14.forEach(row => {
-      if (!hasAny && row.val === 0) return;
+    rows.forEach(k => {
+      const v = log[k];
+      const d = new Date(k + 'T00:00:00');
       const r = document.createElement('div');
       r.className = 'chart-row';
       r.innerHTML = `
-        <div class="chart-date">${row.label}</div>
-        <div class="chart-bar-bg">
-          <div class="chart-bar-fill" style="width:${Math.max(row.val/max*100,row.val?2:0)}%"></div>
-        </div>
-        <div class="chart-val">${row.val || ''}</div>`;
+        <div class="chart-date">${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+        <div class="chart-track"><div class="chart-fill" style="width:${Math.max(v/max*100,9)}%">${v}</div></div>`;
       wrap.appendChild(r);
     });
-
     document.getElementById('stats-modal').classList.add('open');
   }
+  function closeStats(){ document.getElementById('stats-modal').classList.remove('open'); }
+  function closeStatsOutside(e){ if (e.target === document.getElementById('stats-modal')) closeStats(); }
 
-  function fmtDate(d) {
-    return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-  }
-
-  function closeStats() { document.getElementById('stats-modal').classList.remove('open'); }
-  function closeStatsOutside(e) { if (e.target === document.getElementById('stats-modal')) closeStats(); }
-
-  // ── BOOT ─────────────────────────────────────────────────
+  /* ── BOOT ──────────────────────────────────────────────── */
   (function boot() {
-    // URL hash (shared link)
     if (location.hash && location.hash.length > 2) {
       try {
-        const data     = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))));
-        contacts       = data.contacts;
-        currentIdx     = data.currentIdx || 0;
-        currentCalling = data.currentCalling || null;
-        saveSession();
-        history.replaceState(null, '', location.pathname);
+        const d = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))));
+        contacts = d.contacts; currentIdx = d.currentIdx || 0;
+        currentCalling = d.currentCalling || null;
+        saveState();
+        history.replaceState(null,'',location.pathname);
         showMain(); return;
       } catch(e) {}
     }
-    // Session storage
-    if (loadSession()) { showMain(); return; }
-    // Setup
+    if (loadState()) { showMain(); return; }
     document.getElementById('setup-screen').style.display = 'flex';
   })();
 </script>
