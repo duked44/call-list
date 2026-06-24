@@ -589,12 +589,17 @@
 
   /* ── CALL NEXT ─────────────────────────────────────────── */
   function callNext(e) {
-    if (currentIdx >= contacts.length) { e.preventDefault(); return; }
+    e.preventDefault();
+    if (currentIdx >= contacts.length) return;
+    // Capture the exact number NOW, before any re-render can change it.
+    const tel = 'tel:' + contacts[currentIdx].num.replace(/\D/g, '');
     currentCalling = contacts[currentIdx];
     currentIdx++;
     recordCall();
     saveState();
-    setTimeout(render, 80);
+    render();
+    // Fire the dialer explicitly, last, inside the same tap gesture.
+    window.location.href = tel;
   }
 
   /* ── SKIP AHEAD ────────────────────────────────────────── */
