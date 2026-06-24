@@ -4,187 +4,285 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Call List</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --blue:      #2563eb;
+    --blue-dark: #1d4ed8;
+    --blue-light:#eff6ff;
+    --green:     #22c55e;
+    --green-dark:#16a34a;
+    --bg:        #f0f4ff;
+    --card:      #ffffff;
+    --text:      #1e293b;
+    --muted:     #64748b;
+    --border:    #e2e8f0;
+  }
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f0f2f5;
+    background: var(--bg);
     min-height: 100vh;
-    color: #1a1a1a;
+    color: var(--text);
   }
 
-  /* ── SETUP SCREEN ── */
+  /* ─── SETUP SCREEN ─────────────────────────────────────── */
   #setup-screen {
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     min-height: 100vh;
-    padding: 24px;
+    padding: 0;
   }
 
-  #setup-screen h1 {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 6px;
+  .setup-hero {
+    width: 100%;
+    background: linear-gradient(135deg, var(--blue) 0%, #1e40af 100%);
+    padding: 48px 24px 36px;
     text-align: center;
+    color: #fff;
   }
 
-  #setup-screen p {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 18px;
-    text-align: center;
-    max-width: 420px;
+  .setup-hero h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .setup-hero p {
+    font-size: 15px;
+    opacity: 0.85;
     line-height: 1.5;
+  }
+
+  .setup-body {
+    width: 100%;
+    max-width: 520px;
+    padding: 28px 20px 40px;
+  }
+
+  .setup-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 16px rgba(37,99,235,0.10);
+    margin-bottom: 16px;
+  }
+
+  .setup-card label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 10px;
   }
 
   #contacts-input {
     width: 100%;
-    max-width: 480px;
-    height: 260px;
+    height: 240px;
     padding: 14px;
     font-size: 15px;
-    border: 2px solid #ddd;
-    border-radius: 12px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
     resize: vertical;
     font-family: inherit;
-    line-height: 1.6;
-    background: #fff;
+    line-height: 1.7;
+    background: var(--bg);
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  #contacts-input:focus { outline: none; border-color: var(--blue); }
+
+  .format-hint {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .format-hint code {
+    background: var(--blue-light);
+    color: var(--blue);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
   }
 
-  #contacts-input:focus { outline: none; border-color: #22c55e; }
+  #setup-error {
+    color: #dc2626;
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 18px;
+  }
 
   #load-btn {
-    margin-top: 16px;
     width: 100%;
-    max-width: 480px;
-    padding: 16px;
-    background: #22c55e;
+    padding: 17px;
+    background: var(--blue);
     color: #fff;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
     border: none;
     border-radius: 12px;
     cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    letter-spacing: 0.3px;
+  }
+  #load-btn:active { background: var(--blue-dark); transform: scale(0.98); }
+
+  /* ─── MAIN SCREEN ───────────────────────────────────────── */
+  #main-screen { display: none; padding: 14px 14px 48px; max-width: 600px; margin: 0 auto; }
+
+  /* Toolbar */
+  #toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .tool-btn {
+    padding: 7px 13px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    font-size: 13px;
+    cursor: pointer;
+    background: var(--card);
+    color: var(--text);
     transition: background 0.15s;
   }
-  #load-btn:active { background: #16a34a; }
+  .tool-btn:active { background: #f1f5f9; }
+  #reset-btn { margin-left: auto; color: #dc2626; border-color: #fca5a5; }
+  #stats-btn { color: var(--blue); border-color: #bfdbfe; }
 
-  #setup-error {
-    margin-top: 10px;
-    color: #dc2626;
-    font-size: 14px;
+  #share-tip {
+    font-size: 12px;
+    color: var(--muted);
     text-align: center;
+    margin-bottom: 10px;
+    display: none;
+    background: var(--card);
+    padding: 8px 12px;
+    border-radius: 8px;
+    word-break: break-all;
   }
 
-  /* ── MAIN SCREEN ── */
-  #main-screen { display: none; padding: 16px 16px 40px; max-width: 600px; margin: 0 auto; }
+  /* Currently calling */
+  #current-card {
+    display: none;
+    background: var(--blue-light);
+    border: 1.5px solid #bfdbfe;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  #current-card .cc-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 3px;
+  }
+  #current-card .cc-name { font-size: 17px; font-weight: 700; color: var(--blue-dark); }
+  #current-card .cc-num  { font-size: 14px; color: var(--blue); }
 
-  /* Call Next button */
+  /* Call Next */
   #call-next-btn {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
-    padding: 28px 20px 22px;
-    background: #22c55e;
+    padding: 26px 20px 20px;
+    background: linear-gradient(135deg, var(--green) 0%, #16a34a 100%);
     color: #fff;
     border: none;
     border-radius: 18px;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    transition: background 0.15s, transform 0.1s;
-    margin-bottom: 8px;
-    box-shadow: 0 4px 16px rgba(34,197,94,0.35);
+    transition: opacity 0.15s, transform 0.1s;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 18px rgba(34,197,94,0.38);
   }
-  #call-next-btn:active { background: #16a34a; transform: scale(0.98); }
-  #call-next-btn .btn-label { font-size: 28px; font-weight: 800; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
-  #call-next-btn .btn-name  { font-size: 20px; font-weight: 600; display: block; margin-bottom: 2px; }
-  #call-next-btn .btn-num   { font-size: 17px; font-weight: 400; opacity: 0.88; display: block; }
+  #call-next-btn:active { opacity: 0.9; transform: scale(0.98); }
+  #call-next-btn .btn-label { font-size: 26px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 5px; }
+  #call-next-btn .btn-name  { font-size: 20px; font-weight: 600; margin-bottom: 2px; }
+  #call-next-btn .btn-num   { font-size: 16px; font-weight: 400; opacity: 0.9; }
 
   #done-banner {
     display: none;
-    background: #1d4ed8;
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
     color: #fff;
     text-align: center;
-    padding: 26px 20px;
+    padding: 28px 20px;
     border-radius: 18px;
     font-size: 22px;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.3);
   }
 
+  /* Progress */
   #progress-bar-wrap {
-    background: #e5e7eb;
+    background: var(--border);
     border-radius: 99px;
-    height: 6px;
-    margin-bottom: 20px;
+    height: 5px;
+    margin-bottom: 4px;
     overflow: hidden;
   }
-  #progress-bar {
-    height: 100%;
-    background: #22c55e;
-    border-radius: 99px;
-    transition: width 0.3s;
-  }
-  #progress-label {
-    text-align: center;
-    font-size: 13px;
-    color: #888;
-    margin-bottom: 20px;
-    margin-top: -14px;
-  }
+  #progress-bar { height: 100%; background: var(--green); border-radius: 99px; transition: width 0.3s; }
+  #progress-label { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 18px; }
 
-  /* Queue list */
-  #queue-section h2 {
-    font-size: 14px;
-    font-weight: 600;
-    color: #888;
+  /* Queue */
+  #queue-section h2, #called-section h2 {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .contact-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background: #fff;
-    padding: 13px 16px;
+    background: var(--card);
+    padding: 12px 14px;
     border-radius: 10px;
-    margin-bottom: 7px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    margin-bottom: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
-
   .contact-info { flex: 1; }
-  .contact-name { font-weight: 700; font-size: 16px; }
-  .contact-num  { font-size: 14px; color: #555; margin-top: 1px; }
+  .contact-name { font-weight: 700; font-size: 15px; }
+  .contact-num  { font-size: 13px; color: var(--muted); margin-top: 1px; }
 
   .call-back-btn {
-    background: #f0fdf4;
-    border: 1.5px solid #22c55e;
-    color: #16a34a;
+    background: var(--blue-light);
+    border: 1.5px solid #bfdbfe;
+    color: var(--blue);
     border-radius: 8px;
-    padding: 7px 10px;
-    font-size: 20px;
+    padding: 6px 10px;
+    font-size: 18px;
     cursor: pointer;
     text-decoration: none;
     line-height: 1;
     transition: background 0.15s;
     flex-shrink: 0;
-    margin-left: 12px;
+    margin-left: 10px;
   }
-  .call-back-btn:active { background: #dcfce7; }
+  .call-back-btn:active { background: #dbeafe; }
 
-  /* Called section */
+  /* Called toggle */
   #called-toggle {
-    margin-top: 28px;
+    margin-top: 24px;
     background: none;
     border: none;
-    color: #aaa;
+    color: #cbd5e1;
     font-size: 13px;
     cursor: pointer;
     display: block;
@@ -192,77 +290,118 @@
     width: 100%;
     padding: 8px 0;
   }
-  #called-toggle:hover { color: #666; }
+  #called-toggle:hover { color: var(--muted); }
+  #called-section { display: none; margin-top: 8px; }
+  #called-section .contact-row { opacity: 0.6; }
 
-  #called-section { display: none; margin-top: 10px; }
-  #called-section h2 {
-    font-size: 14px;
-    font-weight: 600;
-    color: #bbb;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 10px;
-  }
-  #called-section .contact-row {
-    opacity: 0.65;
-  }
-
-  /* Reset / share row */
-  #toolbar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 18px;
-    align-items: center;
-  }
-  #share-btn, #reset-btn {
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 1.5px solid #ddd;
-    font-size: 13px;
-    cursor: pointer;
-    background: #fff;
-    color: #333;
-    transition: background 0.15s;
-  }
-  #share-btn:active, #reset-btn:active { background: #f3f4f6; }
-  #reset-btn { margin-left: auto; color: #dc2626; border-color: #fca5a5; }
-
-  #share-tip {
-    font-size: 12px;
-    color: #888;
-    text-align: center;
-    margin-top: -10px;
-    margin-bottom: 14px;
+  /* ─── STATS MODAL ───────────────────────────────────────── */
+  #stats-modal {
     display: none;
-    word-break: break-all;
-    background: #f9fafb;
-    padding: 8px 12px;
-    border-radius: 8px;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.55);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
   }
+  #stats-modal.open { display: flex; }
+
+  .stats-sheet {
+    background: var(--card);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 540px;
+    padding: 24px 20px 36px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .stats-header h2 { font-size: 18px; font-weight: 700; }
+  #close-stats {
+    background: var(--bg);
+    border: none;
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--muted);
+  }
+
+  .stats-total {
+    text-align: center;
+    margin-bottom: 22px;
+    padding: 16px;
+    background: var(--blue-light);
+    border-radius: 12px;
+  }
+  .stats-total .big-num { font-size: 48px; font-weight: 800; color: var(--blue); line-height: 1; }
+  .stats-total .big-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .chart-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 12px;
+  }
+
+  .chart-wrap { display: flex; flex-direction: column; gap: 7px; }
+
+  .chart-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .chart-date { font-size: 12px; color: var(--muted); width: 70px; flex-shrink: 0; text-align: right; }
+  .chart-bar-bg { flex: 1; background: var(--bg); border-radius: 99px; height: 22px; overflow: hidden; }
+  .chart-bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue) 0%, #60a5fa 100%); border-radius: 99px; min-width: 4px; transition: width 0.4s; }
+  .chart-val { font-size: 13px; font-weight: 700; color: var(--blue); width: 28px; flex-shrink: 0; }
+
+  .no-stats { text-align: center; color: var(--muted); font-size: 14px; padding: 20px 0; }
 </style>
 </head>
 <body>
 
-<!-- SETUP SCREEN -->
+<!-- SETUP -->
 <div id="setup-screen">
-  <h1>📞 Call List</h1>
-  <p>Paste your contacts below — one per line.<br>
-     Format: <strong>Name, Number</strong><br>
-     Example: <em>John Smith, 555-867-5309</em></p>
-  <textarea id="contacts-input" placeholder="John Smith, 555-867-5309&#10;Jane Doe, 555-234-5678&#10;Bob Johnson, 555-345-6789"></textarea>
-  <div id="setup-error"></div>
-  <button id="load-btn" onclick="loadContacts()">Start Calling →</button>
+  <div class="setup-hero">
+    <h1>📞 Call List</h1>
+    <p>Paste your contacts and start calling.<br>Contacts are never permanently saved.</p>
+  </div>
+  <div class="setup-body">
+    <div class="setup-card">
+      <label>Paste Contacts</label>
+      <textarea id="contacts-input" placeholder="Name, Phone Number&#10;One contact per line"></textarea>
+      <div class="format-hint">One per line &nbsp;·&nbsp; Format: <code>Name, Number</code></div>
+      <div id="setup-error"></div>
+    </div>
+    <button id="load-btn" onclick="loadContacts()">Start Calling →</button>
+  </div>
 </div>
 
-<!-- MAIN SCREEN -->
+<!-- MAIN -->
 <div id="main-screen">
   <div id="toolbar">
-    <button id="share-btn" onclick="shareList()">📋 Share to Phone</button>
-    <button id="reset-btn" onclick="resetAll()">✕ Reset</button>
+    <button class="tool-btn" id="share-btn" onclick="shareList()">📋 Share</button>
+    <button class="tool-btn" id="stats-btn" onclick="openStats()">📊 Stats</button>
+    <button class="tool-btn" id="reset-btn" onclick="resetAll()">✕ Reset</button>
   </div>
   <div id="share-tip"></div>
 
-  <!-- Call Next button (acts as an <a> for tel:) -->
+  <!-- Currently calling -->
+  <div id="current-card">
+    <div class="cc-label">📞 Currently Calling</div>
+    <div class="cc-name" id="cc-name"></div>
+    <div class="cc-num"  id="cc-num"></div>
+  </div>
+
+  <!-- Call Next -->
   <a id="call-next-btn" href="#" onclick="callNext(event)">
     <span class="btn-label">📞 CALL NEXT</span>
     <span class="btn-name" id="next-name">—</span>
@@ -286,25 +425,61 @@
   </div>
 </div>
 
-<script>
-  let contacts = [];   // [{name, num}]
-  let currentIdx = 0; // index of the next-to-call
+<!-- STATS MODAL -->
+<div id="stats-modal" onclick="closeStatsOutside(event)">
+  <div class="stats-sheet">
+    <div class="stats-header">
+      <h2>Call Stats</h2>
+      <button id="close-stats" onclick="closeStats()">✕</button>
+    </div>
+    <div class="stats-total">
+      <div class="big-num" id="stats-total-num">0</div>
+      <div class="big-label">Total calls made</div>
+    </div>
+    <div class="chart-label">Last 14 days</div>
+    <div class="chart-wrap" id="chart-wrap"></div>
+    <div class="no-stats" id="no-stats" style="display:none">No calls recorded yet.</div>
+  </div>
+</div>
 
-  // ── PERSISTENCE ──────────────────────────────────────────
-  function save() {
-    localStorage.setItem('cl_contacts', JSON.stringify(contacts));
-    localStorage.setItem('cl_idx', currentIdx);
+<script>
+  let contacts   = [];
+  let currentIdx = 0;
+  let currentCalling = null; // {name, num} of person being called right now
+
+  // ── STORAGE ──────────────────────────────────────────────
+  // Contacts: sessionStorage only (gone on tab close)
+  // Call log:  localStorage (persisted, date→count only)
+
+  function saveSession() {
+    sessionStorage.setItem('cl_contacts', JSON.stringify(contacts));
+    sessionStorage.setItem('cl_idx', currentIdx);
+    if (currentCalling) sessionStorage.setItem('cl_current', JSON.stringify(currentCalling));
+    else sessionStorage.removeItem('cl_current');
   }
 
-  function loadFromStorage() {
-    const c = localStorage.getItem('cl_contacts');
-    const i = localStorage.getItem('cl_idx');
-    if (c) {
-      contacts = JSON.parse(c);
-      currentIdx = parseInt(i) || 0;
-      return true;
-    }
-    return false;
+  function loadSession() {
+    const c = sessionStorage.getItem('cl_contacts');
+    if (!c) return false;
+    contacts   = JSON.parse(c);
+    currentIdx = parseInt(sessionStorage.getItem('cl_idx')) || 0;
+    const cur  = sessionStorage.getItem('cl_current');
+    currentCalling = cur ? JSON.parse(cur) : null;
+    return true;
+  }
+
+  // Daily call log: { "2026-06-24": 5, ... }
+  function getLog() {
+    try { return JSON.parse(localStorage.getItem('cl_log') || '{}'); } catch(e) { return {}; }
+  }
+  function recordCall() {
+    const log  = getLog();
+    const today = todayKey();
+    log[today] = (log[today] || 0) + 1;
+    localStorage.setItem('cl_log', JSON.stringify(log));
+  }
+  function todayKey() {
+    return new Date().toISOString().slice(0,10);
   }
 
   // ── SETUP ────────────────────────────────────────────────
@@ -312,41 +487,38 @@
     const raw = document.getElementById('contacts-input').value.trim();
     if (!raw) { showError('Please paste at least one contact.'); return; }
 
-    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+    const lines  = raw.split('\n').map(l => l.trim()).filter(Boolean);
     const parsed = [];
-    const bad = [];
+    const bad    = [];
 
     lines.forEach((line, i) => {
-      // Accept: "Name, Number" or "Name Number" (last token = number)
       const commaIdx = line.lastIndexOf(',');
       let name, num;
       if (commaIdx !== -1) {
         name = line.slice(0, commaIdx).trim();
         num  = line.slice(commaIdx + 1).trim();
       } else {
-        // fallback: split on last whitespace cluster before digits
-        const m = line.match(/^(.+?)\s+([\d\s\(\)\-\+\.]+)$/);
+        const m = line.match(/^(.+?)\s+([\d\s\(\)\-\+\.]{7,})$/);
         if (m) { name = m[1].trim(); num = m[2].trim(); }
-        else    { bad.push(i + 1); return; }
+        else   { bad.push(i + 1); return; }
       }
       if (!name || !num) { bad.push(i + 1); return; }
       parsed.push({ name, num });
     });
 
     if (!parsed.length) { showError('No valid contacts found. Use "Name, Number" format.'); return; }
-    if (bad.length) { showError(`Skipped line(s) ${bad.join(', ')} — couldn't parse. Check format.`); }
+    if (bad.length) showError(`Skipped line(s) ${bad.join(', ')} — check format.`);
 
-    contacts = parsed;
-    currentIdx = 0;
-    save();
+    contacts       = parsed;
+    currentIdx     = 0;
+    currentCalling = null;
+    saveSession();
     showMain();
   }
 
-  function showError(msg) {
-    document.getElementById('setup-error').textContent = msg;
-  }
+  function showError(msg) { document.getElementById('setup-error').textContent = msg; }
 
-  // ── MAIN SCREEN ──────────────────────────────────────────
+  // ── MAIN ─────────────────────────────────────────────────
   function showMain() {
     document.getElementById('setup-screen').style.display = 'none';
     document.getElementById('main-screen').style.display  = 'block';
@@ -356,21 +528,27 @@
   function render() {
     const total   = contacts.length;
     const called  = currentIdx;
-    const remaining = total - called;
 
     // Progress
     const pct = total ? (called / total * 100) : 0;
     document.getElementById('progress-bar').style.width = pct + '%';
-    document.getElementById('progress-label').textContent =
-      `${called} of ${total} called`;
+    document.getElementById('progress-label').textContent = `${called} of ${total} called`;
 
-    // Call Next button vs Done banner
+    // Currently calling card
+    const curCard = document.getElementById('current-card');
+    if (currentCalling) {
+      curCard.style.display = 'block';
+      document.getElementById('cc-name').textContent = currentCalling.name;
+      document.getElementById('cc-num').textContent  = currentCalling.num;
+    } else {
+      curCard.style.display = 'none';
+    }
+
+    // Call Next vs Done
     const btn    = document.getElementById('call-next-btn');
     const banner = document.getElementById('done-banner');
-
     if (currentIdx < total) {
       btn.style.display    = 'flex';
-      btn.style.flexDirection = 'column';
       banner.style.display = 'none';
       document.getElementById('next-name').textContent = contacts[currentIdx].name;
       document.getElementById('next-num').textContent  = contacts[currentIdx].num;
@@ -380,42 +558,34 @@
       banner.style.display = 'block';
     }
 
-    // Queue list (upcoming, skip currentIdx which is shown in button)
+    // Queue
     const qList = document.getElementById('queue-list');
     qList.innerHTML = '';
-    const upcoming = contacts.slice(currentIdx + 1);
-    if (upcoming.length === 0 && currentIdx < total) {
-      qList.innerHTML = '<div style="color:#aaa;font-size:14px;padding:8px 0;">No more after this one.</div>';
+    contacts.slice(currentIdx + 1).forEach(c => qList.appendChild(makeRow(c, false)));
+    if (contacts.slice(currentIdx + 1).length === 0 && currentIdx < total) {
+      qList.innerHTML = '<div style="color:#94a3b8;font-size:13px;padding:6px 0;">Last one!</div>';
     }
-    upcoming.forEach((c) => {
-      qList.appendChild(makeRow(c, false));
-    });
+    document.getElementById('queue-section').style.display = currentIdx < total ? 'block' : 'none';
 
-    // Called list
+    // Called
     const cList = document.getElementById('called-list');
     cList.innerHTML = '';
-    const calledContacts = contacts.slice(0, currentIdx).reverse();
-    calledContacts.forEach(c => cList.appendChild(makeRow(c, true)));
+    contacts.slice(0, currentIdx).reverse().forEach(c => cList.appendChild(makeRow(c, true)));
     document.getElementById('called-count').textContent = called;
-
-    // Queue section heading
-    document.getElementById('queue-section').style.display =
-      (currentIdx < total) ? 'block' : 'none';
   }
 
-  function makeRow(c, showCallBtn) {
-    const row = document.createElement('div');
+  function makeRow(c, showBtn) {
+    const row  = document.createElement('div');
     row.className = 'contact-row';
     const info = document.createElement('div');
     info.className = 'contact-info';
     info.innerHTML = `<div class="contact-name">${esc(c.name)}</div><div class="contact-num">${esc(c.num)}</div>`;
     row.appendChild(info);
-    if (showCallBtn) {
+    if (showBtn) {
       const a = document.createElement('a');
-      a.className = 'call-back-btn';
-      a.href = 'tel:' + c.num.replace(/\D/g, '');
+      a.className  = 'call-back-btn';
+      a.href       = 'tel:' + c.num.replace(/\D/g, '');
       a.textContent = '📞';
-      a.title = 'Call back';
       row.appendChild(a);
     }
     return row;
@@ -428,40 +598,30 @@
   // ── CALL NEXT ────────────────────────────────────────────
   function callNext(e) {
     if (currentIdx >= contacts.length) { e.preventDefault(); return; }
-    // let the href (tel:) fire naturally, then advance
+    currentCalling = contacts[currentIdx];
     currentIdx++;
-    save();
-    // short delay so dialer launches before re-render
+    recordCall();
+    saveSession();
     setTimeout(render, 80);
   }
 
   // ── CALLED TOGGLE ────────────────────────────────────────
   function toggleCalled() {
     const sec = document.getElementById('called-section');
-    const btn = document.getElementById('called-toggle');
-    if (sec.style.display === 'block') {
-      sec.style.display = 'none';
-      btn.textContent = `▾ Show called (${currentIdx})`;
-    } else {
-      sec.style.display = 'block';
-      btn.innerHTML = `▴ Hide called (<span id="called-count">${currentIdx}</span>)`;
-    }
+    const open = sec.style.display === 'block';
+    sec.style.display = open ? 'none' : 'block';
+    document.getElementById('called-toggle').innerHTML =
+      `${open ? '▾' : '▴'} ${open ? 'Show' : 'Hide'} called (<span id="called-count">${currentIdx}</span>)`;
   }
 
   // ── SHARE ────────────────────────────────────────────────
   function shareList() {
-    // Encode contacts + progress into URL hash so phone can load same state
-    const payload = btoa(unescape(encodeURIComponent(JSON.stringify({ contacts, currentIdx }))));
+    const payload = btoa(unescape(encodeURIComponent(JSON.stringify({ contacts, currentIdx, currentCalling }))));
     const url = location.href.split('#')[0] + '#' + payload;
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(() => {
-        showTip('Link copied! Open it on your phone to sync the list.');
-      });
-    } else {
-      showTip(url);
-    }
+      navigator.clipboard.writeText(url).then(() => showTip('Link copied! Open on your phone to sync.'));
+    } else { showTip(url); }
   }
-
   function showTip(msg) {
     const tip = document.getElementById('share-tip');
     tip.textContent = msg;
@@ -471,29 +631,75 @@
 
   // ── RESET ────────────────────────────────────────────────
   function resetAll() {
-    if (!confirm('Reset everything and start over?')) return;
-    localStorage.clear();
+    if (!confirm('Clear this call list and start over? (Stats are kept.)')) return;
+    sessionStorage.clear();
     location.hash = '';
     location.reload();
   }
 
+  // ── STATS ────────────────────────────────────────────────
+  function openStats() {
+    const log   = getLog();
+    const dates = Object.keys(log).sort();
+    const total = Object.values(log).reduce((a,b) => a+b, 0);
+
+    document.getElementById('stats-total-num').textContent = total;
+
+    // Last 14 days
+    const last14 = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const k = d.toISOString().slice(0,10);
+      last14.push({ key: k, label: fmtDate(d), val: log[k] || 0 });
+    }
+
+    const max = Math.max(...last14.map(r => r.val), 1);
+    const wrap = document.getElementById('chart-wrap');
+    wrap.innerHTML = '';
+
+    const hasAny = last14.some(r => r.val > 0);
+    document.getElementById('no-stats').style.display = hasAny ? 'none' : 'block';
+
+    last14.forEach(row => {
+      if (!hasAny && row.val === 0) return;
+      const r = document.createElement('div');
+      r.className = 'chart-row';
+      r.innerHTML = `
+        <div class="chart-date">${row.label}</div>
+        <div class="chart-bar-bg">
+          <div class="chart-bar-fill" style="width:${Math.max(row.val/max*100,row.val?2:0)}%"></div>
+        </div>
+        <div class="chart-val">${row.val || ''}</div>`;
+      wrap.appendChild(r);
+    });
+
+    document.getElementById('stats-modal').classList.add('open');
+  }
+
+  function fmtDate(d) {
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+
+  function closeStats() { document.getElementById('stats-modal').classList.remove('open'); }
+  function closeStatsOutside(e) { if (e.target === document.getElementById('stats-modal')) closeStats(); }
+
   // ── BOOT ─────────────────────────────────────────────────
   (function boot() {
-    // 1. Check URL hash (shared link from another device)
+    // URL hash (shared link)
     if (location.hash && location.hash.length > 2) {
       try {
-        const data = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))));
-        contacts    = data.contacts;
-        currentIdx  = data.currentIdx || 0;
-        save();
-        history.replaceState(null, '', location.pathname); // clean URL
-        showMain();
-        return;
-      } catch(e) { /* bad hash, fall through */ }
+        const data     = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))));
+        contacts       = data.contacts;
+        currentIdx     = data.currentIdx || 0;
+        currentCalling = data.currentCalling || null;
+        saveSession();
+        history.replaceState(null, '', location.pathname);
+        showMain(); return;
+      } catch(e) {}
     }
-    // 2. Check localStorage
-    if (loadFromStorage()) { showMain(); return; }
-    // 3. Show setup
+    // Session storage
+    if (loadSession()) { showMain(); return; }
+    // Setup
     document.getElementById('setup-screen').style.display = 'flex';
   })();
 </script>
