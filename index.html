@@ -235,6 +235,33 @@
     box-shadow: 0 10px 26px rgba(52,199,89,0.4);
   }
   #call-next-btn:active { transform: scale(0.98); box-shadow: 0 5px 16px rgba(52,199,89,0.35); }
+  #call-next-btn.cooling { pointer-events: none; opacity: 0.62; filter: saturate(0.6); box-shadow: none; }
+  #call-next-btn.cooling .btn-label { letter-spacing: 1px; }
+
+  /* live "today" counter chip in header */
+  .today-chip {
+    font-size: 11px; font-weight: 700;
+    background: var(--blue-soft); color: var(--blue-dark);
+    border-radius: 99px; padding: 3px 9px; margin-left: 8px;
+    vertical-align: middle; white-space: nowrap;
+  }
+
+  /* small undo button */
+  #undo-btn {
+    display: none; width: fit-content; margin: -6px auto 18px;
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    font-size: 12px; font-weight: 600; padding: 5px 13px; border-radius: 9px; cursor: pointer;
+  }
+  #undo-btn:active { background: #eef3fa; }
+
+  /* hidden search box (revealed inside Recent calls) */
+  .search-box {
+    width: 100%; padding: 11px 13px; margin-bottom: 10px;
+    font-size: 15px; font-family: inherit;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    background: var(--bg); color: var(--text);
+  }
+  .search-box:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
   #call-next-btn .btn-label { display:flex; align-items:center; gap:10px; font-size: 25px; font-weight: 800; letter-spacing: 0.4px; margin-bottom: 7px; }
   #call-next-btn .btn-label .ph { font-size: 26px; }
   #call-next-btn .btn-name { font-size: 21px; font-weight: 600; margin-bottom: 2px; }
@@ -353,7 +380,7 @@
 <!-- shared phone-icon SVG symbol -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="phone-icon" viewBox="0 0 24 24">
-    <path d="M19.95 16.06c-1.3 0-2.55-.21-3.72-.59a1.05 1.05 0 0 0-1.07.25l-1.79 1.79a15.8 15.8 0 0 1-6.94-6.94l1.79-1.8c.28-.27.37-.67.25-1.06A11.7 11.7 0 0 1 7.88 4c0-.58-.47-1.05-1.05-1.05H3.87C3.29 2.95 2.6 3.21 2.6 4 2.6 12.6 9.4 19.4 18 19.4c.75 0 1.05-.67 1.05-1.26v-3.03c0-.58-.47-1.05-1.1-1.05z"/>
+    <path d="M7.4 2.4H4.6A2.6 2.6 0 0 0 2 5c0 8.84 7.16 16 16 16a2.6 2.6 0 0 0 2.6-2.6v-2.8a1.7 1.7 0 0 0-1.34-1.66l-3.2-.7a1.7 1.7 0 0 0-1.7.62l-.86 1.1a13 13 0 0 1-5.16-5.16l1.1-.86a1.7 1.7 0 0 0 .62-1.7l-.7-3.2A1.7 1.7 0 0 0 7.4 2.4z"/>
   </symbol>
 </svg>
 
@@ -377,6 +404,7 @@
     <div class="app-title">
       <span class="logo-dot"><svg class="ph"><use href="#phone-icon"/></svg></span>
       Call List
+      <span class="today-chip" id="today-chip">0 today</span>
     </div>
     <div class="header-actions">
       <button class="icon-btn brand" onclick="openStats()">Stats</button>
@@ -391,7 +419,11 @@
       <span class="chev">▾</span>
     </div>
     <div class="recent-preview" id="recent-preview"></div>
-    <div class="recent-body" id="recent-body"></div>
+    <div class="recent-body" id="recent-body">
+      <input id="contact-search" class="search-box" placeholder="🔍 Search all contacts…" oninput="onSearch()">
+      <div id="search-results" style="display:none"></div>
+      <div id="recent-list"></div>
+    </div>
   </div>
 
   <!-- Currently calling -->
@@ -402,7 +434,6 @@
       <div class="cc-name" id="cc-name"></div>
       <div class="cc-num" id="cc-num"></div>
     </div>
-    <a class="cc-redial" id="cc-redial" href="#"><svg class="ph"><use href="#phone-icon"/></svg></a>
   </div>
 
   <!-- Call Next -->
@@ -416,6 +447,7 @@
 
   <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
   <div id="progress-label"></div>
+  <button id="undo-btn" onclick="undoLast()">↶ Undo last call</button>
 
   <div id="queue-section">
     <div class="section-head">
@@ -448,6 +480,8 @@
   let contacts   = [];
   let currentIdx = 0;
   let currentCalling = null;
+  let busy = false;            // locks the Call Next button during the 3s cooldown
+  let cooldownIv = null;       // handle for the countdown timer
 
   /* ── STORAGE ──────────────────────────────────────────────
      Active list -> localStorage (survives the browser killing a
@@ -516,13 +550,16 @@
     document.getElementById('progress-bar').style.width = (total ? called/total*100 : 0) + '%';
     document.getElementById('progress-label').textContent = `${called} of ${total} called`;
 
+    // live "today" counter + undo button
+    document.getElementById('today-chip').textContent = (getLog()[todayKey()] || 0) + ' today';
+    document.getElementById('undo-btn').style.display = currentIdx > 0 ? 'block' : 'none';
+
     // Currently calling
     const cc = document.getElementById('current-card');
     if (currentCalling) {
       cc.style.display = 'flex';
       document.getElementById('cc-name').textContent = currentCalling.name;
       document.getElementById('cc-num').textContent = currentCalling.num;
-      document.getElementById('cc-redial').href = 'tel:' + currentCalling.num.replace(/\D/g,'');
     } else cc.style.display = 'none';
 
     // Call Next / Done
@@ -530,6 +567,7 @@
     const done = document.getElementById('done-banner');
     if (currentIdx < total) {
       btn.style.display = 'flex'; done.style.display = 'none';
+      btn.querySelector('.btn-label').innerHTML = '<svg class="ph"><use href="#phone-icon"/></svg> CALL NEXT';
       document.getElementById('next-name').textContent = contacts[currentIdx].name;
       document.getElementById('next-num').textContent = contacts[currentIdx].num;
       btn.href = 'tel:' + contacts[currentIdx].num.replace(/\D/g,'');
@@ -556,7 +594,7 @@
       prev.innerHTML = `Last: <b>${esc(called[0].name)}</b> · ${esc(called[0].num)}`;
       prev.style.display = 'block';
     } else { prev.innerHTML = '<span style="color:var(--faint)">No calls yet</span>'; prev.style.display = 'block'; }
-    const body = document.getElementById('recent-body');
+    const body = document.getElementById('recent-list');
     body.innerHTML = '';
     called.forEach(c => body.appendChild(makeRecentRow(c)));
   }
@@ -590,6 +628,7 @@
   /* ── CALL NEXT ─────────────────────────────────────────── */
   function callNext(e) {
     e.preventDefault();
+    if (busy) return;                       // ignore extra taps during cooldown
     if (currentIdx >= contacts.length) return;
     // Capture the exact number NOW, before any re-render can change it.
     const tel = 'tel:' + contacts[currentIdx].num.replace(/\D/g, '');
@@ -597,19 +636,102 @@
     currentIdx++;
     recordCall();
     saveState();
-    render();
+    busy = true;
+    render();          // updates progress, queue, recent, currently-calling
+    startCooldown();   // lock the button & count down 3s before the next name shows
     // Fire the dialer explicitly, last, inside the same tap gesture.
     window.location.href = tel;
+  }
+
+  // 3-second guard: prevents fast double-taps on slow internet from skipping names.
+  function startCooldown() {
+    const btn  = document.getElementById('call-next-btn');
+    if (currentIdx >= contacts.length) {     // that was the last contact
+      setTimeout(() => { busy = false; }, 3000);
+      return;
+    }
+    const label = btn.querySelector('.btn-label');
+    btn.classList.add('cooling');
+    document.getElementById('next-name').textContent = 'Calling ' + currentCalling.name + '…';
+    document.getElementById('next-num').textContent  = currentCalling.num;
+    let t = 3;
+    label.textContent = 'NEXT IN ' + t;
+    cooldownIv = setInterval(() => {
+      t--;
+      if (t > 0) { label.textContent = 'NEXT IN ' + t; return; }
+      clearInterval(cooldownIv); cooldownIv = null;
+      busy = false;
+      btn.classList.remove('cooling');
+      render();        // reveal the next caller, button clickable again
+    }, 1000);
+  }
+
+  // cancel an in-progress cooldown (used by Undo and Skip-ahead)
+  function clearCooldown() {
+    if (cooldownIv) { clearInterval(cooldownIv); cooldownIv = null; }
+    busy = false;
+    document.getElementById('call-next-btn').classList.remove('cooling');
+  }
+
+  /* ── UNDO LAST CALL ────────────────────────────────────── */
+  function undoLast() {
+    if (currentIdx === 0) return;
+    clearCooldown();
+    currentIdx--;
+    // take one back off today's count (covers a misclick / wrong number)
+    const log = getLog(), k = todayKey();
+    if (log[k]) { log[k]--; if (log[k] <= 0) delete log[k]; localStorage.setItem('cl_log', JSON.stringify(log)); }
+    // the person now "currently calling" is the previous one actually dialed
+    currentCalling = currentIdx > 0 ? contacts[currentIdx - 1] : null;
+    saveState();
+    render();
+  }
+
+  /* ── SEARCH (hidden inside Recent calls) ───────────────── */
+  function onSearch() {
+    const q = document.getElementById('contact-search').value.trim().toLowerCase();
+    const results = document.getElementById('search-results');
+    const recent  = document.getElementById('recent-list');
+    if (!q) { results.style.display = 'none'; results.innerHTML = ''; recent.style.display = 'block'; return; }
+    recent.style.display = 'none'; results.style.display = 'block';
+    const qDigits = q.replace(/\D/g, '');
+    const matches = [];
+    contacts.forEach((c, i) => {
+      const nameHit = c.name.toLowerCase().includes(q);
+      const numHit  = qDigits && c.num.replace(/\D/g, '').includes(qDigits);
+      if (nameHit || numHit) matches.push({ c, i });
+    });
+    results.innerHTML = '';
+    if (!matches.length) { results.innerHTML = '<div class="empty-note">No matches.</div>'; return; }
+    matches.slice(0, 50).forEach(({ c, i }) => {
+      const row = document.createElement('div');
+      row.className = 'contact-row' + (i < currentIdx ? ' called-row' : '');
+      row.innerHTML = `<div class="contact-info"><div class="contact-name">${esc(c.name)}</div><div class="contact-num">${esc(c.num)}</div></div>`;
+      if (i >= currentIdx) {
+        const b = document.createElement('button');
+        b.className = 'jump-btn'; b.textContent = 'Go here';
+        b.onclick = () => { if (jumpTo(i)) { document.getElementById('contact-search').value = ''; onSearch(); } };
+        row.appendChild(b);
+      } else {
+        const a = document.createElement('a');
+        a.className = 'redial-btn'; a.href = 'tel:' + c.num.replace(/\D/g, '');
+        a.innerHTML = '<svg class="ph"><use href="#phone-icon"/></svg>';
+        row.appendChild(a);
+      }
+      results.appendChild(row);
+    });
   }
 
   /* ── SKIP AHEAD ────────────────────────────────────────── */
   function jumpTo(idx) {
     const c = contacts[idx];
-    if (!confirm(`Skip ahead to ${c.name}?\n\nEveryone above will be marked done (not counted as calls).`)) return;
+    if (!confirm(`Skip ahead to ${c.name}?\n\nEveryone above will be marked done (not counted as calls).`)) return false;
+    clearCooldown();
     currentIdx = idx;
     currentCalling = null;
     saveState();
     render();
+    return true;
   }
 
   /* ── RECENT TOGGLE ─────────────────────────────────────── */
